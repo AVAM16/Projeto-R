@@ -1,42 +1,23 @@
 set.seed(1056)
 
-p <- 0.2
+simulate_geometric <- function(p, n) {
+  u <- runif(n)
+  x <- floor(log(u) / log(1 - p))
+  return(x)
+}
 
+p <- 0.2 
 n <- 1171
 
-F_X <- function(x) {
-  if (x < 0) {
-    return(0)
-  } else {
-    return((1 - p)^x * p)
-  }
-}
+X <- simulate_geometric(p, n)
 
-simulacao <- numeric(n)
-media_amostral <- numeric(n)
-desvio_padrao_amostral <- numeric(n)
-proporcao <- 0
+sample_mean <- mean(X)
+sample_sd <- sd(X)
 
-for (i in 1:n) {
-  u <- runif(1)
-  x <- 0
-  
-  while (F_X(x) < u) {
-    x <- x + 1
-  }
-  
-  simulacao[i] <- x
-  
-  media_amostral[i] <- mean(simulacao[1:i])
-  desvio_padrao_amostral[i] <- sd(simulacao[1:i])
-  
-  if (simulacao[i] > media_amostral[i] + desvio_padrao_amostral[i]) {
-    proporcao <- proporcao + 1
-  }
-}
+count <- sum(X > (sample_mean + sample_sd))
 
-proporcao <- proporcao / n
+proportion <- count / n
 
-proporcao <- round(proporcao, 4)
+proportion_round <- round(proportion, 4)
 
-proporcao
+proportion_round
