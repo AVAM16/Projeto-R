@@ -1,23 +1,22 @@
 set.seed(4762)
 
-lambda <- 24
 k <- 1358
-amostra <- rexp(k, rate = 1/lambda)
+lambda <- 24
+sample <- rexp(k, rate = 1/lambda)
 
-soma_sucessiva <- cumsum(amostra)
+cumulative_sum <- cumsum(sample)
 
-T <- ceiling(soma_sucessiva[k])
+T <- ceiling(cumulative_sum[k])
 
-subintervalos <- seq(0, T, by = 1)
+intervals <- seq(0, T, by = 1)
 
-num_acontecimentos <- tabulate(findInterval(soma_sucessiva, subintervalos))
+event_counts <- tabulate(findInterval(cumulative_sum, intervals))
 
-media <- mean(num_acontecimentos)
+mean_count <- mean(event_counts)
+expected_count <- k * (1 - exp(-lambda))
 
-valor_esperado <- k * (1/T)
+abs_deviation <- abs(mean_count - expected_count)
 
-desvio_absoluto <- abs(media - valor_esperado)
+rounded_deviation <- round(abs_deviation, 4)
 
-desvio_absoluto_arredondado <- round(desvio_absoluto, 4)
-
-desvio_absoluto_arredondado
+rounded_deviation
