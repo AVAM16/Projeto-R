@@ -6,7 +6,7 @@ n <- 187
 cauchy_sample <- rcauchy(n, location = 2, scale = 1.8)
 sorted_cauchy_sample <- sort(cauchy_sample)
 
-normal_sample <- rnorm(n, mean = 3.3, sd = 4)
+normal_sample <- rnorm(n, mean = 3.3, sd = 2)
 
 probabilities <- seq(1, n) / (n + 1)
 
