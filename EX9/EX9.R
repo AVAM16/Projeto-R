@@ -1,39 +1,50 @@
 library(ggplot2)
 set.seed(1094)
 
+n_values <- c(30, 50, 100, 200, 300, 500, 1000)
+k <- 2500
 p <- 0.2
 gamma <- 0.98
-k <- 2500
-sample_sizes <- c(30, 50, 100, 200, 300, 500, 1000)
 
-calculate_difference <- function(sample_size) {
-  # Metodo 1
-  x_bar <- mean(rbinom(sample_size, 1, p))
-  z <- qnorm((1 + gamma) / 2)
-  p_1 <- (-2 * x_bar + sqrt(4 * x_bar^2 - 4 * (x_bar^2 - (z^2) * (x_bar * (1 - x_bar)) / sample_size))) / 2
-  
-  # Metodo 2
-  z_2 <- (x_bar - p) / sqrt((x_bar * (1 - x_bar)) / sample_size)
-  
-  ci_1 <- c(x_bar - qnorm(gamma/2) * sqrt(x_bar * (1 - x_bar) / sample_size), 
-            x_bar + qnorm(gamma/2) * sqrt(x_bar * (1 - x_bar) / sample_size))
-  ci_2 <- c(p - qnorm(gamma/2) * sqrt(p * (1 - p) / sample_size), 
-            p + qnorm(gamma/2) * sqrt(p * (1 - p) / sample_size))
-  
-  diff_length <- abs(diff(ci_2)) - abs(diff(ci_1))
-  
-  return(diff_length)
+# Metodo 1
+calculate_interval_length_method1 <- function(x_bar, n, z) {
+  discriminant <- x_bar^2 - 2 * p * x_bar + p^2 - z^2 * p * (1 - p) / n
+  interval_length <- 2 * sqrt(max(0, discriminant))
+  return(interval_length)
 }
 
-mean_diff_lengths <- sapply(sample_sizes, function(n) {
-  diffs <- replicate(k, calculate_difference(n))
-  mean(diffs)
-})
+# Metodo 2
+calculate_interval_length_method2 <- function(x_bar, n) {
+  interval_length <- 2 * qnorm((1 + gamma) / 2) * sqrt(x_bar * (1 - x_bar) / n)
+  return(interval_length)
+}
 
-plot_data <- data.frame(sample_size = sample_sizes, mean_diff_length = mean_diff_lengths)
+mean_differences <- numeric(length(n_values))
 
-ggplot(plot_data, aes(x = sample_size, y = mean_diff_length)) +
-  geom_point(shape = 16) +
-  labs(x = "n", y = "Média das Diferenças",
+for (i in seq_along(n_values)) {
+  n <- n_values[i]
+  differences <- numeric(k)
+  
+  for (j in 1:k) {
+    sample <- rbinom(n, size = 1, prob = p)
+    x_bar <- mean(sample)
+    z <- qnorm((1 + gamma) / 2)
+    
+    interval_length_method1 <- calculate_interval_length_method1(x_bar, n, z)
+    interval_length_method2 <- calculate_interval_length_method2(x_bar, n)
+    
+    differences[j] <- interval_length_method2 - interval_length_method1
+  }
+  
+  valid_differences <- differences[is.finite(differences)]
+  mean_differences[i] <- mean(valid_differences)
+}
+
+data <- data.frame(n = n_values, mean_differences = mean_differences)
+
+ggplot(data, aes(x = n, y = mean_differences)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Tamanho da amostra (n)", y = "Média das diferenças",
        title = "Média das diferenças em função da dimensão da amostra") +
-  ylim(0, max(mean_diff_lengths))
+  ylim(min(mean_differences), max(mean_differences))
