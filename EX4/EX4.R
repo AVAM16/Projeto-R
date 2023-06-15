@@ -1,22 +1,14 @@
 set.seed(4762)
-
 k <- 1358
 lambda <- 24
-sample <- rexp(k, rate = 1/lambda)
-
+sample <- rexp(k, rate = lambda)
 cumulative_sum <- cumsum(sample)
-
 T <- ceiling(cumulative_sum[k])
+limits <- ceiling(cumulative_sums[k])
+count <- table(cut(cumulative_sums, breaks =  limits, right = FALSE))
 
-intervals <- seq(0, T, by = 1)
+mean1 <- mean(count)
 
-event_counts <- tabulate(findInterval(cumulative_sum, intervals))
-
-mean_count <- mean(event_counts)
-expected_count <- k * (1 - exp(-lambda))
-
-abs_deviation <- abs(mean_count - expected_count)
-
-rounded_deviation <- round(abs_deviation, 4)
-
+deviation <- abs(mean1 - lambda)
+rounded_deviation <- round(deviation, 4)
 rounded_deviation
